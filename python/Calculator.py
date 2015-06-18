@@ -15,9 +15,11 @@ class Calculator:
         self.method=None
         self.nqueue=5
         self.executable={
-                "bayesian":"runMultibin.py"
+                "bayesian":"runMultibin.py",
+                "asymptotic":"runMultibin.py",
         }
-        self.path="/home/home1/institut_3a/padeken/MUSiC/fivesigma/python"
+        self.path=os.path.join(os.environ.get('FIVESIGMA'),"python")
+
 
 
     def add_hypothesis(self,hypo):
@@ -33,9 +35,11 @@ class Calculator:
         os.chdir(self.outputdir)
 
         for hypo in self.hypothesis:
+            print "preparing ",hypo.name
             hypo.prepare_histograms()
             hypo.write_root(self.outputdir)
             hypo.write_card(self.outputdir)
+            print hypo.name,"finished"
         self._makeJdl()
         f = open(os.path.join(self.outputdir, "calculator.pkl"), 'wb')
         cPickle.dump(self, f)
@@ -51,12 +55,17 @@ class Calculator:
         print >>f, "Error        = err.$(Process)_$(Cluster)"
         print >>f, "Output       = out.$(Process)_$(Cluster)"
         print >>f, "Log          = condor_$(Cluster).log"
+        print >>f, "request_memory = 2.5 GB"
         print >>f, "notification = Error"
         print >>f, ""
         if self.method=="bayesian":
             for hypo in self.hypothesis:
-                 print >>f, "arguments =",hypo.cardfilename, hypo.name, hypo.luminosity, "-o",os.path.join(self.outputdir,"expected"),"--bayesian --rmax "+str(hypo.rmax)
+                 print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir,"expected"),"--bayesian --rmax "+str(hypo.rmax)
                  print >>f, "queue " + str(self.nqueue)
+        if self.method=="asymptotic":
+            for hypo in self.hypothesis:
+                 print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir,"expected"),"--asymptotic"
+                 print >>f, "queue 1"
         f.close()
         #makeJdlLongRun(path, executable, limits, outputdir, name, options)
 

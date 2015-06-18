@@ -65,20 +65,20 @@ class Hypothesis:
             name=""
             for par in self.parameters:
                 name+="%s_%s_"%(par,self.parameters[par])
-            name=name[:-1]
+            name+="lumi_%s"%(self.luminosity)
             self._name=name
         return self.name
     def _get_card_name(self):
         if self._cardfilename is not None:
             return self._cardfilename
         else:
-            self._cardfilename=os.path.join(self.directory, "datacard_"+self.name+"_lumi"+str(self.luminosity)+".txt")
+            self._cardfilename=os.path.join(self.directory, "datacard_"+self.name+".txt")
         return self._cardfilename
     def _get_root_name(self):
         if self._rootfilename is not None:
             return self._rootfilename
         else:
-            self._rootfilename=os.path.join(self.directory, "histograms_"+self.name+"_lumi"+str(self.luminosity)+".root")
+            self._rootfilename=os.path.join(self.directory, "histograms_"+self.name+".root")
         return self._rootfilename
     def _get_rmax(self):
         if self._rmax is not None:
@@ -145,7 +145,7 @@ class Hypothesis:
                 for hist in self.uncertainties[uncertainty]["Signal"]:
                     hist.Scale(0)
     def set_luminosity(self, luminosity):
-        for hist in [self.bg_hist.values(), self.sg_hist]:
+        for hist in self.bg_hist.values()+[self.sg_hist]:
             hist.Scale(luminosity/self.luminosity)
         for uncertainty in self.uncertainties:
             for sb in self.uncertainties[uncertainty]:

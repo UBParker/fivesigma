@@ -8,9 +8,9 @@ import glob
 import re
 
 calc=Calculator.Calculator("DMLimits")
-calc.outputdir="/home/home1/institut_3a/padeken/net/Wprime/NEWLimitTOOL/test2"
+calc.outputdir="/home/home1/institut_3a/padeken/net/Wprime/NEWLimitTOOL/test7"
 
-calc.method="bayesian"
+calc.method="asymptotic"
 signalFileNames=glob.glob("/home/home1/institut_3a/padeken/MUSiC/SmallPy/eventWeighter/out/*.root")
 signalNames=[ sg.split("/")[-1].replace(".root","") for sg in signalFileNames]
 signalFiles={}
@@ -67,7 +67,10 @@ for lumi in scanLumi:
         mxi= re.search('Mxi_\d*', sample)
         mxi=mxi.group()
         mxi=mxi.replace("_","").replace("Mxi","")
-        hypo.set_parameters({"mxi":mxi})
+        xi= re.search('g_\w\d', sample)
+        xi=xi.group()
+        xi=xi.replace("_","").replace("g","")
+        hypo.set_parameters({"gxi":xi,"mxi":mxi})
         calc.add_hypothesis(hypo)
 print "Write output..."
 calc.write()

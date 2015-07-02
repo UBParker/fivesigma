@@ -63,7 +63,7 @@ for lumi in scanLumi:
         hypo.add_uncertainty_scalar("lumi",0.026)
         hypo.add_uncertainty_scalar("eff",0.02)
         hypo.set_bining(width=10,xmin=200,xmax=4000)
-        hypo.rescale_signal(1000./signal_n_ev_sample)
+        hypo.rescale_signal(1./signal_n_ev_sample)
         mxi= re.search('Mxi_\d*', sample)
         mxi=mxi.group()
         mxi=mxi.replace("_","").replace("Mxi","")

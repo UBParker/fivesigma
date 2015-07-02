@@ -161,6 +161,8 @@ class Hypothesis:
     def set_rmax(self,rmax):
         self.rmax=rmax
     def prepare_histograms(self):
+        #signal_scalefactor = float((lumi*signal_xs)/signal_n_ev_sample)
+        #signal_hist.Scale(signal_scalefactor)
         self.sg_hist=self._prepare_hist(self.sg_hist,"Signal")
         for bg in self.bg_hist:
             self.bg_hist[bg]=self._prepare_hist(self.bg_hist[bg],bg)

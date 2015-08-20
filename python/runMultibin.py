@@ -28,6 +28,7 @@ if options.mcmcobs:
    if options.bayesian:
       print "thisisobserved MCMC"
       os.system("combine -M MarkovChainMC -H ProfileLikelihood "+datafile+" --tries 30 -s -1 --rMax "+options.rmax )
+      os.system("cp higgsCombineTest.* "+options.outputdir+"/poi_"+poi+"--shape_"+id_generator()+".root")
 elif options.mcmcexp:
    if options.bayesian:
       print "thisisexpected MCMC"

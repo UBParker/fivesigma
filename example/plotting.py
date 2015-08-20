@@ -91,16 +91,17 @@ def main():
     options.observed=os.path.join(options.directory,options.observed)
     veto = options.veto.split(",")
 
-
-
-
     f = open(os.path.join(options.directory,options.calculator),'rb')
     calculator = cPickle.load(f)
     f.close()
 
     plotting_helper.merge_root_files(options.expected)
+    plotting_helper.merge_root_files(options.observed)
     limits=plotting_helper.get_from_expected_dir(options.expected,calculator.method=="asymptotic")
     parameters={}
+
+    # get also observed limits:
+    limitsObs=plotting_helper.get_from_expected_dir(options.observed,calculator.method=="bayesian")
 
     for hypo in calculator.hypothesis:
         for par in hypo.parameters:
@@ -147,12 +148,19 @@ def main():
 
         combinations=itertools.product(*varible_pois_lists)
         for combi in combinations:
+            
+            print "par", par, "combi", combi
+            
             expected_limit=collections.OrderedDict()
+            observed_limit=collections.OrderedDict()
             for ipar in pois[par]:
                 reduced_limits=filter(lambda x: x[par]==ipar,limits)
+                if calculator.hasData: reduced_limits_obs=filter(lambda x: x[par]==ipar,limitsObs)
                 limit=find_parmeter_in_limit(reduced_limits,combi,variable_pois)
+                if calculator.hasData: limitObs=find_parmeter_in_limit(reduced_limits_obs,combi,variable_pois)
                 if limit is not None:
                     expected_limit[ipar]=limit["limit"]
+                    if calculator.hasData: observed_limit[ipar]=limitObs["limit"]
             if len(expected_limit)==0:
                 continue
             c1.SetLogx(True)
@@ -181,6 +189,15 @@ def main():
             if min(x50)<=0:
                 c1.SetLogx(False)
             c1.Update()
+
+
+            if calculator.hasData:
+                x50,y50=plotting_helper.get_arrays_from_expected(observed_limit,"median")
+                lobserved = ROOT.TGraph(len(x50),x50,y50)
+                lobserved.SetLineColor(1)
+                lobserved.SetLineStyle(1)
+                lobserved.SetLineWidth(3)
+                lobserved.Draw("L")
 
 
             name="Limit"
@@ -333,10 +350,6 @@ def main():
 
                 #expected_limit=collections.OrderedDict()
                 #for i in lumis:
-                    #expected_limit[i]=limits[par][ipar][i]
-
-                #x95,y95=plotting_helper.get_arrays_from_expected(expected_limit,"l95","h95")
-                #f95 = ROOT.TGraph(len(x95),x95,y95);
 
                 #f95.SetFillColor(ROOT.kYellow)
                 #f95.SetTitle("")
@@ -371,6 +384,8 @@ def main():
                 #c1.SaveAs("Limit_%s_for_%s.root"%(par,ipar))
                 #c1.SaveAs("Limit_%s_for_%s.pdf"%(par,ipar))
                 #c1.SaveAs("Limit_%s_for_%s.png"%(par,ipar))
+
+
 
 
 

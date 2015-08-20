@@ -19,7 +19,7 @@ class Calculator:
                 "asymptotic":"runMultibin.py",
         }
         self.path=os.path.join(os.environ.get('FIVESIGMA'),"python")
-
+        self.hasData=False
 
 
     def add_hypothesis(self,hypo):
@@ -48,26 +48,30 @@ class Calculator:
 
     def _makeJdl(self):
     #path, executable, limits, outputdir, name, options, bayesian=False):
-        f = open(os.path.join(self.outputdir,"expected/multibinlimit_"+self.name+"_lumi"+str(self.hypothesis[0].luminosity)+".jdl"), 'w')
-        print >>f, "executable   = "+os.path.join(self.path, self.executable[self.method])
-        print >>f, "universe     = vanilla"
-        print >>f, "getenv       = true"
-        print >>f, "Error        = err.$(Process)_$(Cluster)"
-        print >>f, "Output       = out.$(Process)_$(Cluster)"
-        print >>f, "Log          = condor_$(Cluster).log"
-        print >>f, "request_memory = 2.5 GB"
-        print >>f, "notification = Error"
-        print >>f, ""
-        if self.method=="bayesian":
-            for hypo in self.hypothesis:
-                 print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir,"expected"),"--bayesian --rmax "+str(hypo.rmax)
-                 print >>f, "queue " + str(self.nqueue)
-        if self.method=="asymptotic":
-            for hypo in self.hypothesis:
-                 print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir,"expected"),"--asymptotic"
-                 print >>f, "queue 1"
-        f.close()
-        #makeJdlLongRun(path, executable, limits, outputdir, name, options)
+        for limittype in ["expected", "observed"]:
+            f = open(os.path.join(self.outputdir,limittype+"/multibinlimit_"+self.name+"_lumi"+str(self.hypothesis[0].luminosity)+".jdl"), 'w')
+            print >>f, "executable   = "+os.path.join(self.path, self.executable[self.method])
+            print >>f, "universe     = vanilla"
+            print >>f, "getenv       = true"
+            print >>f, "Error        = err.$(Process)_$(Cluster)"
+            print >>f, "Output       = out.$(Process)_$(Cluster)"
+            print >>f, "Log          = condor_$(Cluster).log"
+            print >>f, "request_memory = 2.5 GB"
+            print >>f, "notification = Error"
+            print >>f, ""
+
+            if limittype == "expected": limarguments = "--exp "
+            else:                       limarguments = "--obs "
+
+            if self.method=="bayesian" or limittype=="observed":
+                for hypo in self.hypothesis:
+                     print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--bayesian --rmax "+str(hypo.rmax)
+                     print >>f, "queue " + str(self.nqueue)
+            if self.method=="asymptotic" and limittype=="expected":
+                for hypo in self.hypothesis:
+                     print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--asymptotic"
+                     print >>f, "queue 1"
+            f.close()
 
     #def makeJdl(path, executable, limits, outputdir, name, options, bayesian=False):
         #f = open(os.path.join(self.outputdir,"expected/multibinlimit_"+name+"_lumi"+str(limits[0].luminosity)+".jdl"), 'w')

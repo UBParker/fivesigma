@@ -88,7 +88,6 @@ def main():
     (options, args ) = parser.parse_args()
 
     options.expected=os.path.join(options.directory,options.expected)
-    options.observed=os.path.join(options.directory,options.observed)
     veto = options.veto.split(",")
 
     f = open(os.path.join(options.directory,options.calculator),'rb')
@@ -96,12 +95,8 @@ def main():
     f.close()
 
     plotting_helper.merge_root_files(options.expected)
-    plotting_helper.merge_root_files(options.observed)
     limits=plotting_helper.get_from_expected_dir(options.expected,calculator.method=="asymptotic")
     parameters={}
-
-    # get also observed limits:
-    limitsObs=plotting_helper.get_from_expected_dir(options.observed,calculator.method=="bayesian")
 
     for hypo in calculator.hypothesis:
         for par in hypo.parameters:
@@ -152,15 +147,11 @@ def main():
             print "par", par, "combi", combi
             
             expected_limit=collections.OrderedDict()
-            observed_limit=collections.OrderedDict()
             for ipar in pois[par]:
                 reduced_limits=filter(lambda x: x[par]==ipar,limits)
-                if calculator.hasData: reduced_limits_obs=filter(lambda x: x[par]==ipar,limitsObs)
                 limit=find_parmeter_in_limit(reduced_limits,combi,variable_pois)
-                if calculator.hasData: limitObs=find_parmeter_in_limit(reduced_limits_obs,combi,variable_pois)
                 if limit is not None:
                     expected_limit[ipar]=limit["limit"]
-                    if calculator.hasData: observed_limit[ipar]=limitObs["limit"]
             if len(expected_limit)==0:
                 continue
             c1.SetLogx(True)
@@ -190,15 +181,17 @@ def main():
                 c1.SetLogx(False)
             c1.Update()
 
-
-            if calculator.hasData:
-                x50,y50=plotting_helper.get_arrays_from_expected(observed_limit,"median")
+            try:
+                # if present, plot observed limit:
+                x50,y50=plotting_helper.get_observed_limit("observed", par, combi)
                 lobserved = ROOT.TGraph(len(x50),x50,y50)
+                lobserved.Sort()
                 lobserved.SetLineColor(1)
                 lobserved.SetLineStyle(1)
                 lobserved.SetLineWidth(3)
                 lobserved.Draw("L")
-
+            except:
+                print "Omitting observed limit."
 
             name="Limit"
             for i in range(len(variable_pois)):

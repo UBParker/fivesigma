@@ -6,8 +6,9 @@ import math
 import glob
 import os
 from collections import defaultdict
+from collections import OrderedDict
 import re
-
+import numpy
 
 def getLimitFromRootFile(filename):
    f=ROOT.TFile(filename,"r")
@@ -294,3 +295,66 @@ def get_from_expected_dir(directory ,asymptotic):
             #except:
                 #print "no limit in ", path
     return limit
+
+# observed limit functions:
+
+def read_output_file(filename):
+	current_par, current_limit =  "", -1
+	with open(filename, 'r') as f:
+		for line in f:
+			if "Limit" in line and not "tries" in line:
+				current_limit = float(line.split(" ")[3])
+			if "poi:" in line:
+				current_par = line.split(" ")[1]
+	return (current_par, current_limit)
+
+def get_pois_value(pois, parameter):
+    pois = pois.split("_")
+    value = -1
+    for i in range(len(pois)):
+        if pois[i] == parameter:
+            value = pois[i+1]
+    return value 
+
+def StringContainsAll(string, listcontains):
+    
+    # return True if string contains all list items.
+    
+    matches = 0
+    for item in listcontains:
+        if item in string:
+            matches += 1
+    if matches == len(listcontains) and matches != 0:
+        return True
+    return False
+
+def get_observed_limit(directory, currentpar, fixed_parvalues):
+
+    # read all limits from out* files from output directory:
+    
+    limits = {}
+    if os.path.isdir(directory):
+        for path in glob.glob("%s/out.*"%(directory)):
+            filename=os.path.basename(path)
+            pois, val = read_output_file(path)
+            limits[pois.replace("\n","")] = val
+
+    if len(limits) == 0:
+        print "No observed limit found."
+        return None
+
+    # return xy list for plotting for current and fixed parameter(s):
+    
+    x, y = numpy.array([],'d'), numpy.array([],'d')
+    
+    for pois in limits:
+        if StringContainsAll(pois, fixed_parvalues):
+            parvalue = float(get_pois_value(pois, currentpar))
+            limit = float(limits[pois])
+            #xy[parvalue] = limit
+            #x.append(parvalue)
+            #y.append(limit)
+            x=numpy.append(x, parvalue)
+            y=numpy.append(y, limit)
+
+    return x, y

@@ -19,7 +19,6 @@ class Calculator:
                 "asymptotic":"runMultibin.py",
         }
         self.path=os.path.join(os.environ.get('FIVESIGMA'),"python")
-        self.hasData=False
 
 
     def add_hypothesis(self,hypo):

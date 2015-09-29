@@ -62,6 +62,8 @@ def main():
     parser.add_option("--crosssection", action="store", dest="crosssection", help="Cross Section file", default="/net/scratch_cms/institut_3a/olschewski/software/limit/SSMCrossSections8TeV.txt")
     parser.add_option("--xmin", action="store", type="int", dest="xmin", help="XMin", default=200)
     parser.add_option("--xmax", action="store", type="int", dest="xmax", help="xMax", default=4000)
+    parser.add_option("--ymin", action="store", type="int", dest="ymin", help="yMin", default=0.1)
+    parser.add_option("--ymax", action="store", type="int", dest="ymax", help="yMax", default=1000)
 
 
     #parser.add_option("-t", "--tohiggs", action="store_true", dest="tohiggs", help="Recalculate non Higgs style to Higgs style", default=False)
@@ -162,11 +164,11 @@ def main():
             f95.SetFillColor(ROOT.kYellow)
             f95.SetTitle("")
             if par=="Mmed": f95.GetXaxis().SetTitle(par +" [GeV]")
-            if par=="mxi": f95.GetXaxis().SetTitle(par +" [GeV]")
+            elif par=="mxi": f95.GetXaxis().SetTitle(par +" [GeV]")
             else: f95.GetXaxis().SetTitle(par)
             f95.GetYaxis().SetTitle("#sigma #times B "+unit("pb"))
             f95.GetXaxis().SetRangeUser(options.xmin,options.xmax)
-            f95.GetYaxis().SetRangeUser(0.1,1000)
+            f95.GetYaxis().SetRangeUser(options.ymin,options.ymax)
             x68,y68=plotting_helper.get_arrays_from_expected(expected_limit,"l68","h68")
             f68 = ROOT.TGraph(len(x68),x68,y68);
             f68.SetFillColor(ROOT.kGreen)

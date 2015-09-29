@@ -1,6 +1,7 @@
 #!/bin/env python
 from __future__ import division
-import plotting_helper
+#~ import plotting_helper
+import python.plotting_helper as plotting_helper
 import os
 import optparse
 import cPickle
@@ -59,7 +60,7 @@ def main():
     parser.add_option("-x", "--expected", action="store", dest="expected", help="path to expected limit files", default="expected")
     parser.add_option("--veto", action="store", dest="veto", help="Veto these mass points (comma seperated list)", default="")
     parser.add_option("--crosssection", action="store", dest="crosssection", help="Cross Section file", default="/net/scratch_cms/institut_3a/olschewski/software/limit/SSMCrossSections8TeV.txt")
-    parser.add_option("--xmin", action="store", type="int", dest="xmin", help="XMin", default=0)
+    parser.add_option("--xmin", action="store", type="int", dest="xmin", help="XMin", default=200)
     parser.add_option("--xmax", action="store", type="int", dest="xmax", help="xMax", default=4000)
 
 
@@ -160,9 +161,12 @@ def main():
 
             f95.SetFillColor(ROOT.kYellow)
             f95.SetTitle("")
-            f95.GetXaxis().SetTitle(par)
-            f95.GetYaxis().SetTitle("#sigma #times B "+unit("fb"))
+            if par=="Mmed": f95.GetXaxis().SetTitle(par +" [GeV]")
+            if par=="mxi": f95.GetXaxis().SetTitle(par +" [GeV]")
+            else: f95.GetXaxis().SetTitle(par)
+            f95.GetYaxis().SetTitle("#sigma #times B "+unit("pb"))
             f95.GetXaxis().SetRangeUser(options.xmin,options.xmax)
+            f95.GetYaxis().SetRangeUser(0.1,1000)
             x68,y68=plotting_helper.get_arrays_from_expected(expected_limit,"l68","h68")
             f68 = ROOT.TGraph(len(x68),x68,y68);
             f68.SetFillColor(ROOT.kGreen)
@@ -196,14 +200,26 @@ def main():
             name="Limit"
             for i in range(len(variable_pois)):
                 name+="_%s_%s"%(variable_pois[i],combi[i])
+                name+="_"+os.getcwd().split("/")[-1]
             write_table(name,pois,par,variable_pois,combi,expected_limit)
 
+            leg = ROOT.TLegend(0.65,0.75,0.89,0.89);
+            leg.AddEntry(lexpected,"expected limit","l")
+            leg.AddEntry(f68,"expected limit #pm 1 #sigma","f")
+            leg.AddEntry(f95,"expected limit #pm 2 #sigma","f")
+            leg.AddEntry(lobserved,"observed limit","l")
+            leg.Draw();
 
-
+            #~ gStyle.SetStatStyle(0);
+            #~ gStyle.SetTitleStyle(0); 
+            leg.SetFillColor(0);
+            leg.SetBorderSize(0);
+            
             c1.SaveAs(name+".root")
             c1.SaveAs(name+".pdf")
             c1.SaveAs(name+".png")
 
+    
 
 
 

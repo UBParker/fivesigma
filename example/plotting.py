@@ -60,10 +60,12 @@ def main():
     parser.add_option("-x", "--expected", action="store", dest="expected", help="path to expected limit files", default="expected")
     parser.add_option("--veto", action="store", dest="veto", help="Veto these mass points (comma seperated list)", default="")
     parser.add_option("--crosssection", action="store", dest="crosssection", help="Cross Section file", default="/net/scratch_cms/institut_3a/olschewski/software/limit/SSMCrossSections8TeV.txt")
-    parser.add_option("--xmin", action="store", type="int", dest="xmin", help="XMin", default=200)
-    parser.add_option("--xmax", action="store", type="int", dest="xmax", help="xMax", default=4000)
+    parser.add_option("--xmin", action="store", type="int", dest="xmin", help="XMin", default=0)
+    parser.add_option("--xmax", action="store", type="int", dest="xmax", help="xMax", default=6000)
     parser.add_option("--ymin", action="store", type="int", dest="ymin", help="yMin", default=0.1)
     parser.add_option("--ymax", action="store", type="int", dest="ymax", help="yMax", default=1000)
+    parser.add_option("--s", action="store", type="string", dest="s", help="yMax", default="13 TeV")
+    parser.add_option("--xs", action="store", type="string", dest="xs", help="yMax", default="41.82 pb^{-1}" )
 
 
     #parser.add_option("-t", "--tohiggs", action="store_true", dest="tohiggs", help="Recalculate non Higgs style to Higgs style", default=False)
@@ -163,8 +165,9 @@ def main():
 
             f95.SetFillColor(ROOT.kYellow)
             f95.SetTitle("")
-            if par=="Mmed": f95.GetXaxis().SetTitle(par +" [GeV]")
-            elif par=="mxi": f95.GetXaxis().SetTitle(par +" [GeV]")
+            #~ if par=="Mmed" or par=="mxi": f95.GetXaxis().SetTitle(par +" [GeV]")
+            if par=="Mmed": f95.GetXaxis().SetTitle("m_{Med}" +" (GeV)")
+            elif par=="mxi": f95.GetXaxis().SetTitle("m_#xi" +" (GeV)")
             else: f95.GetXaxis().SetTitle(par)
             f95.GetYaxis().SetTitle("#sigma #times B "+unit("pb"))
             f95.GetXaxis().SetRangeUser(options.xmin,options.xmax)
@@ -205,18 +208,30 @@ def main():
                 name+="_"+os.getcwd().split("/")[-1]
             write_table(name,pois,par,variable_pois,combi,expected_limit)
 
+
+            
+            
             leg = ROOT.TLegend(0.65,0.75,0.89,0.89);
             leg.AddEntry(lexpected,"expected limit","l")
             leg.AddEntry(f68,"expected limit #pm 1 #sigma","f")
             leg.AddEntry(f95,"expected limit #pm 2 #sigma","f")
-            leg.AddEntry(lobserved,"observed limit","l")
-            leg.Draw();
+            leg.AddEntry(lobserved,"observed limits","l")
+            leg.Draw()
 
             #~ gStyle.SetStatStyle(0);
             #~ gStyle.SetTitleStyle(0); 
             leg.SetFillColor(0);
             leg.SetBorderSize(0);
             
+            
+            tex= ROOT.TLatex(0.6,0.91,"#font[42]{#scale[0.8]{"+options.xs+" ("+options.s+")}}") #42pb
+            tex.SetNDC()
+            tex.SetTextSize(0.05)
+            tex.Draw("same")
+        
+            
+        
+                
             c1.SaveAs(name+".root")
             c1.SaveAs(name+".pdf")
             c1.SaveAs(name+".png")

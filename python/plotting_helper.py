@@ -98,7 +98,10 @@ class ExpectedLimit:
       else:
          #print filename
          x = array.array('d',[0])
-         tree.SetBranchAddress( "limit", x )
+         try:
+            tree.SetBranchAddress( "limit", x )
+         except:
+            raise RuntimeError("this is wrong: %s"%(filename))
          alist, i = [], 0
          while tree.GetEntry(i):
             i += 1
@@ -314,12 +317,12 @@ def get_pois_value(pois, parameter):
     for i in range(len(pois)):
         if pois[i] == parameter:
             value = pois[i+1]
-    return value 
+    return value
 
 def StringContainsAll(string, listcontains):
-    
+
     # return True if string contains all list items.
-    
+
     matches = 0
     for item in listcontains:
         if item in string:
@@ -331,8 +334,7 @@ def StringContainsAll(string, listcontains):
 def get_observed_limit(directory, currentpar, fixed_parvalues):
 
     # read all limits from out* files from output directory:
-    
-    limits = {}
+    limits = OrderedDict()
     if os.path.isdir(directory):
         for path in glob.glob("%s/out.*"%(directory)):
             filename=os.path.basename(path)
@@ -344,10 +346,11 @@ def get_observed_limit(directory, currentpar, fixed_parvalues):
         return None
 
     # return xy list for plotting for current and fixed parameter(s):
-    
+
     x, y = numpy.array([],'d'), numpy.array([],'d')
-    
-    for pois in limits:
+    iterator=limits.keys()
+    iterator.sort()
+    for pois in iterator:
         if StringContainsAll(pois, fixed_parvalues):
             parvalue = float(get_pois_value(pois, currentpar))
             limit = float(limits[pois])

@@ -8,6 +8,12 @@ import ROOT
 import numpy as np
 import math
 
+class BinningError(Exception):
+    def __init__(self, name, newbin, oldbin):
+        self.name, self.newbin, self.oldbin = name, newbin, oldbin
+    def __str__(self):
+        return "BinningError in histogram " + self.name + ": New bin: " + self.newbin + " and old bin: " + self.oldbin
+
 class Hypothesis:
     def __init__(self):
         self._name=None
@@ -50,6 +56,10 @@ class Hypothesis:
             binContent, binError, n = 0, 0, 0
             while hist.GetXaxis().GetBinLowEdge(oldbin) < newhist.GetXaxis().GetBinUpEdge(newbin):
                 if hist.GetXaxis().GetBinUpEdge(oldbin) > newhist.GetXaxis().GetBinUpEdge(newbin):
+                    print name, newbin, oldbin
+                    hist.Draw()
+                    newhist.Draw("same")
+                    raw_input()
                     raise BinningError(name, newbin, oldbin)
                 binContent += hist.GetBinContent(oldbin)
                 binError += (hist.GetBinError(oldbin))**2
@@ -144,20 +154,31 @@ class Hypothesis:
             for sb in self.uncertainties[uncertainty]:
                 for hist in self.uncertainties[uncertainty]["Signal"]:
                     hist.Scale(0)
-    def set_luminosity(self, luminosity):
+    def set_luminosity_and_scale_all(self, luminosity):
         for hist in self.bg_hist.values()+[self.sg_hist]:
             hist.Scale(luminosity/self.luminosity)
         for uncertainty in self.uncertainties:
+            #sb =all signal and backgrounds
             for sb in self.uncertainties[uncertainty]:
-                for hist in self.uncertainties[uncertainty][sb]:
+                if sb in self.uncertainties[uncertainty]:
+                    for hist in self.uncertainties[uncertainty][sb]:
+                        hist.Scale(luminosity/self.luminosity)
+        self.luminosity = luminosity
+
+    def set_luminosity_and_scale_signal(self, luminosity):
+        self.sg_hist.Scale(luminosity/self.luminosity)
+        for uncertainty in self.uncertainties:
+            if "Signal" in self.uncertainties[uncertainty]:
+                for hist in self.uncertainties[uncertainty]["Signal"]:
                     hist.Scale(luminosity/self.luminosity)
         self.luminosity = luminosity
 
     def rescale_signal(self, scalefactor):
         self.sg_hist.Scale(scalefactor)
         for uncertainty in self.uncertainties:
-            for hist in self.uncertainties[uncertainty]["Signal"]:
-                hist.Scale(scalefactor)
+            if "Signal" in self.uncertainties[uncertainty]:
+                for hist in self.uncertainties[uncertainty]["Signal"]:
+                    hist.Scale(scalefactor)
     def set_rmax(self,rmax):
         self.rmax=rmax
     def prepare_histograms(self):

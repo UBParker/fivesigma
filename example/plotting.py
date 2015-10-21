@@ -55,7 +55,7 @@ def write_table(name,pois,par,variable_pois,combi,expected_limit):
 def main():
     parser = optparse.OptionParser( description = 'Push Histos.', usage = 'usage: %prog cfgfile outfile.root')
     parser.add_option("-d", "--directory", action="store", dest="directory", help="base path to the limits", default=os.getcwd())
-    parser.add_option("-c", "--calculator", action="store", dest="calculator", help="name of the calculator", default= glob.glob(os.getcwd()+"/*.pkl")[0] )
+    parser.add_option("-c", "--calculator", action="store", dest="calculator", help="name of the calculator", default= "first in dir" )
     parser.add_option("-o", "--observed", action="store", dest="observed", help="path to observed limit files", default="observed")
     parser.add_option("-x", "--expected", action="store", dest="expected", help="path to expected limit files", default="expected")
     parser.add_option("--veto", action="store", dest="veto", help="Veto these mass points (comma seperated list)", default="")
@@ -94,6 +94,8 @@ def main():
 
     options.expected=os.path.join(options.directory,options.expected)
     veto = options.veto.split(",")
+    if options.calculator=="first in dir":
+        options.calculator=glob.glob(options.directory+"*.pkl")[0]
 
     f = open(os.path.join(options.directory,options.calculator),'rb')
     calculator = cPickle.load(f)
@@ -130,7 +132,7 @@ def main():
 
 
     c1 = ROOT.TCanvas("c1","",800,800)
-    c1.SetLogx()
+    #c1.SetLogx()
     c1.SetLogy()
     print pois
 
@@ -148,9 +150,9 @@ def main():
 
         combinations=itertools.product(*varible_pois_lists)
         for combi in combinations:
-            
+
             print "par", par, "combi", combi
-            
+
             expected_limit=collections.OrderedDict()
             for ipar in pois[par]:
                 reduced_limits=filter(lambda x: x[par]==ipar,limits)
@@ -159,7 +161,7 @@ def main():
                     expected_limit[ipar]=limit["limit"]
             if len(expected_limit)==0:
                 continue
-            c1.SetLogx(True)
+            #c1.SetLogx(True)
             x95,y95=plotting_helper.get_arrays_from_expected(expected_limit,"l95","h95")
             f95 = ROOT.TGraph(len(x95),x95,y95);
 

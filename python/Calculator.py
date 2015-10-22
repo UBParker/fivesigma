@@ -62,11 +62,11 @@ class Calculator:
             if limittype == "expected": limarguments = "--exp "
             else:                       limarguments = "--obs "
 
-            if self.method=="bayesian" or limittype=="observed":
+            if self.method=="bayesian":
                 for hypo in self.hypothesis:
                      print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--bayesian --rmax "+str(hypo.rmax)
                      print >>f, "queue " + str(self.nqueue)
-            if self.method=="asymptotic" and limittype=="expected":
+            if self.method=="asymptotic":
                 for hypo in self.hypothesis:
                      print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--asymptotic"
                      print >>f, "queue 1"

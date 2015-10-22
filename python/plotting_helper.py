@@ -43,7 +43,7 @@ class Table:
             nlines=len(self.header)
             break
         i=0
-        self.content=dict()
+        self.content=OrderedDict()
         for line in f:
             i+=1
             if line.strip()=="": continue
@@ -302,14 +302,17 @@ def get_from_expected_dir(directory ,asymptotic):
 # observed limit functions:
 
 def read_output_file(filename):
-	current_par, current_limit =  "", -1
-	with open(filename, 'r') as f:
-		for line in f:
-			if "Limit" in line and not "tries" in line:
-				current_limit = float(line.split(" ")[3])
-			if "poi:" in line:
-				current_par = line.split(" ")[1]
-	return (current_par, current_limit)
+    current_par, current_limit =  "", -1
+    with open(filename, 'r') as f:
+        for line in f:
+            if "Limit" in line and not "tries" in line:
+                try:
+                    current_limit = float(line.split(" ")[3])
+                except:
+                    current_limit = float(line.split(" ")[-1])
+            if "poi:" in line:
+                current_par = line.split(" ")[1]
+    return (current_par, current_limit)
 
 def get_pois_value(pois, parameter):
     pois = pois.split("_")

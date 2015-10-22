@@ -98,6 +98,7 @@ class Hypothesis:
             n_sig_ev=self.sg_hist.Integral()
             #good estimate for most cases
             self._rmax=5.*( 2. *math.sqrt(n_bg_ev+1.)+2.)/n_sig_ev
+            self._rmax=( 2. *math.sqrt(n_bg_ev+1.)+2.)/n_sig_ev
             return self._rmax
     def _set_rmax(self,rmax):
         self._rmax=rmax

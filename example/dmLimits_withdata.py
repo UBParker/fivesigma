@@ -40,10 +40,10 @@ for sample in signalFiles:
     print "x", signalFiles[sample]
     hypo.add_sg(signalFiles[sample].Get(baseHistName+"_Main"))
     counter=signalFiles[sample].Get("h_counters")
-    
+
     hypo.add_data(dataFile.Get(baseHistName))
     calc.hasData = True
-    
+
     try:
         #counter=signalFiles[sample].Get("hcounter")
         #signal_n_ev_sample=1.

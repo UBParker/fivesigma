@@ -23,12 +23,14 @@ poi = args[1]
 
 #print "poi:",poi
 rundir="/tmp/limit-multibin-"+id_generator()
+os.system("export RANDFILE=/tmp/.rnd")
 os.makedirs(rundir)
 os.chdir(rundir)
 if options.mcmcobs:
    if options.bayesian:
       print "thisis observed MCMC"
-      os.system("combine -M MarkovChainMC -H ProfileLikelihood "+datafile+" --tries 30 -s -1 --rMax "+options.rmax )
+      #os.system("combine -M MarkovChainMC -H ProfileLikelihood "+datafile+" --tries 30 -s -1 --compile --rMax "+options.rmax )
+      os.system("combine -M MarkovChainMC -H Asymptotic "+datafile+" --tries 30 -s -1 --compile --rMax "+options.rmax )
       os.system("cp higgsCombineTest.* "+options.outputdir+"/poi_"+poi+"--shape_"+id_generator()+".root")
    if options.asymptotic:
       print "this is observed asymptotic"
@@ -42,7 +44,7 @@ elif options.mcmcexp:
    if options.bayesian:
       print "thisis expected MCMC"
       #os.system("combine -M MarkovChainMC -H ProfileLikelihood "+datafile+" --tries 10 -t 400 -s -1 --rMax "+options.rmax )
-      os.system("combine -M MarkovChainMC -H Asymptotic "+datafile+" --tries 10 -t 40 -s -1 --rMax "+options.rmax )
+      os.system("combine -M MarkovChainMC -H Asymptotic "+datafile+" --tries 10 -t 400 -s -1 --compile --rMax "+options.rmax )
       os.system("cp higgsCombineTest.* "+options.outputdir+"/poi_"+poi+"--shape_"+id_generator()+".root")
    if options.asymptotic:
       print "this is expected asymptotic"

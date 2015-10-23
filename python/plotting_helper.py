@@ -263,17 +263,20 @@ def latexformat(x,formatstr):
     else: return formatstr.format(x)
 
 def merge_root_files(directory):
-   #print "#Merge .root files for expected limit"
-   uniquefiles=set()
-   for filename in glob.glob(directory+'/poi_*.root'):
-      ipar=os.path.basename(filename)
-      ipar=ipar.split("--")[0]
-      uniquefiles.add(ipar)
-   #print uniquefiles
-   for i in uniquefiles:
-      if not os.path.exists("%s/merged_%s.root"%(directory,i)):
-         os.system("hadd -f %s/merged_%s.root %s/%s--*.root"%(directory,i,directory,i))
-      #print "#.root file have been merged, don't worry to much about warnings above."
+    #print "#Merge .root files for expected limit"
+    uniquefiles=set()
+    for filename in glob.glob(directory+'/poi_*.root'):
+        ipar=os.path.basename(filename)
+        ipar=ipar.split("--")[0]
+        uniquefiles.add(ipar)
+    for i in uniquefiles:
+        if not os.path.exists("%s/merged_%s.root"%(directory,i)):
+            ##copy if only one file there:
+            files=glob.glob("%s/%s--*.root"%(directory,i))
+            if len(files)>1:
+                os.system("hadd -f %s/merged_%s.root %s/%s--*.root"%(directory,i,directory,i))
+            elif len(files)>0:
+                os.system("cp %s %s/merged_%s.root"%(files[0],directory,i))
 
 def get_from_expected_dir(directory ,asymptotic):
     limit = list()

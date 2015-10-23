@@ -10,3 +10,4 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 export FIVESIGMA=$DIR
 export PYTHONPATH=${FIVESIGMA}/python:${PYTHONPATH}
 
+

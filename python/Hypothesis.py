@@ -36,38 +36,37 @@ class Hypothesis:
     def _set_alt_name(self, hist):
         hist.SetName(hist.GetName().replace("Signal", "Signal_ALT"))
     def _prepare_hist(self,hist,name):
-        binning_vector=[]
+        binning_vector=None
         if self.xmin is None:
             self.xmin=hist.GetBinLowEdge(1)
         if self.xmax is None:
             self.xmax=hist.GetBinLowEdge(hist.GetNbinsX())
         if self.width is not None:
-            #self.factor=int(hist.GetBinWidth(1)/self.width)
             binning_vector=np.arange(self.xmin,self.xmax,self.width)
-        elif self.factor is not None:
-            binning_vector=np.arange(self.xmin,self.xmax,hist.GetBinWidth(1)*self.factor)
         elif self.vector is not None:
             binning_vector=[x for x in self.vector if x>=self.xmin and x<=self.xmax]
-        arrayBinning = array.array('d',binning_vector)
-        newhist = ROOT.TH1F(name, "", len(binning_vector)-1,arrayBinning)
-        self._unique_name(newhist)
-        oldbin = hist.FindBin(binning_vector[0]+1E-5)
-        for newbin in range(1,newhist.GetNbinsX()+1):
-            binContent, binError, n = 0, 0, 0
-            while hist.GetXaxis().GetBinLowEdge(oldbin) < newhist.GetXaxis().GetBinUpEdge(newbin):
-                if hist.GetXaxis().GetBinUpEdge(oldbin) > newhist.GetXaxis().GetBinUpEdge(newbin):
-                    print name, newbin, oldbin
-                    hist.Draw()
-                    newhist.Draw("same")
-                    raw_input()
-                    raise BinningError(name, newbin, oldbin)
-                binContent += hist.GetBinContent(oldbin)
-                binError += (hist.GetBinError(oldbin))**2
-                oldbin += 1
-                n += 1
-            newhist.SetBinContent(newbin,binContent)
-            newhist.SetBinError(newbin,math.sqrt(binError))
-        return newhist
+
+        if binning_vector is not None:
+            hist=hist.Rebin(len(binning_vector)-1,hist.GetName()+str(id(hist)),array.array('d',binning_vector))
+        elif self.factor is not None:
+            hist.Rebin(self.factor)
+        hist.SetName(name)
+        return hist
+    def _calc_statisical_uncertainty(self,name,hist):
+        up,down=self._get_statistical_up_down_hists(hist)
+        self.add_bg_uncertainty_up_down(name,"stat",up,down)
+    def _get_statistical_up_down_hists(self,h):
+        hist_up=h.Clone()
+        self._unique_name(hist_up)
+        hist_up.Reset()
+        hist_down=h.Clone()
+        self._unique_name(hist_down)
+        hist_down.Reset()
+        for ibin in range(h.GetNbinsX()+1):
+            if(h.GetBinContent(ibin)!=0):
+                hist_up.SetBinContent(ibin,h.GetBinContent(ibin)+h.GetBinError(ibin))
+                hist_down.SetBinContent(ibin,h.GetBinContent(ibin)-h.GetBinError(ibin))
+        return [hist_up,hist_down]
     def _get_name(self):
         if self._name is not None:
             return self._name
@@ -109,7 +108,6 @@ class Hypothesis:
             hist.Write(str(hist.GetName()).split("__")[0])
         else:
             hist.Write(name)
-
     def add_bg(self,name,hist):
         self._unique_name(hist)
         self.bg_hist[name]=hist
@@ -135,6 +133,8 @@ class Hypothesis:
         self.add_sg_uncertainty_scalar(name,value)
         for bgname in self.bg_hist:
             self.add_bg_uncertainty_scalar(bgname,name,value)
+    def add_statistical_uncertainty(self):
+        self._do_statisical_uncertainty=True
     def set_bining(self, width=None, factor=None, vector=None, xmin=None, xmax=None):
         self.width=width
         self.factor=factor
@@ -183,18 +183,17 @@ class Hypothesis:
     def set_rmax(self,rmax):
         self.rmax=rmax
     def prepare_histograms(self):
-        #signal_scalefactor = float((lumi*signal_xs)/signal_n_ev_sample)
-        #signal_hist.Scale(signal_scalefactor)
         self.sg_hist=self._prepare_hist(self.sg_hist,"Signal")
+        if self._do_statisical_uncertainty:
+            self._calc_statisical_uncertainty("Signal",self.sg_hist)
         for bg in self.bg_hist:
             self.bg_hist[bg]=self._prepare_hist(self.bg_hist[bg],bg)
+            if self._do_statisical_uncertainty:
+                self._calc_statisical_uncertainty(bg,self.bg_hist[bg])
         for uncertainty in self.uncertainties:
             for sb in self.uncertainties[uncertainty]:
                 self.uncertainties[uncertainty][sb][0]=self._prepare_hist(self.uncertainties[uncertainty][sb][0],sb+"_"+uncertainty+"_Up")
                 self.uncertainties[uncertainty][sb][1]=self._prepare_hist(self.uncertainties[uncertainty][sb][1],sb+"_"+uncertainty+"_Down")
-                #for ihins=hist in enumerate(self.uncertainties[uncertainty][sb]):
-                    ##print hist,uncertainty,sb
-                    #hist=self._prepare_hist(hist,sb+"_"+uncertainty)
         if self.data_hist is not None:
             self.data_hist=self._prepare_hist(self.data_hist,"data_obs")
         else:

@@ -17,6 +17,7 @@ signalFiles={}
 for sgName,sgFile in zip(signalNames,signalFileNames):
     signalFiles[sgName]=ROOT.TFile(sgFile,"READ")
 bgFile=ROOT.TFile("/home/home1/institut_3a/kutzner/darkmatter/SmallPy/systematics/bg_for_limit.root","READ")
+#the bg is saled to 1pb
 lumi=41.856481082
 dataFile=ROOT.TFile("/user/kutzner/out/output2015_7_30_17_24/merged/SingleElectron_2015B.root","READ")
 
@@ -67,11 +68,12 @@ for sample in signalFiles:
                 histup=signalFiles[sample].Get(baseHistName+"_syst_%s%s%s"%(part,itype,syst_updown[0]))
                 histdown=signalFiles[sample].Get(baseHistName+"_syst_%s%s%s"%(part,itype,syst_updown[1]))
                 hypo.add_sg_uncertainty_up_down("%s%s"%(part,itype),histup,histdown)
-    hypo.set_luminosity(lumi)
+    hypo.set_luminosity_and_scale_all(lumi)
 
     hypo.add_uncertainty_scalar("lumi",0.026)
     hypo.add_uncertainty_scalar("eff",0.02)
     hypo.set_bining(width=10,xmin=200,xmax=4000)
+    #set the efficency
     hypo.rescale_signal(1./signal_n_ev_sample)
     mxi=find_between(sample,"DMAV_","_Mxi")
     xi= re.search('g_\w\d', sample)

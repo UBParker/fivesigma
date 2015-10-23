@@ -58,7 +58,7 @@ for lumi in scanLumi:
                     histup=signalFiles[sample].Get(baseHistName+"_syst_%s%s%s"%(part,itype,syst_updown[0]))
                     histdown=signalFiles[sample].Get(baseHistName+"_syst_%s%s%s"%(part,itype,syst_updown[1]))
                     hypo.add_sg_uncertainty_up_down("%s%s"%(part,itype),histup,histdown)
-        hypo.set_luminosity(lumi)
+        hypo.set_luminosity_and_scale_all(lumi)
 
         hypo.add_uncertainty_scalar("lumi",0.026)
         hypo.add_uncertainty_scalar("eff",0.02)

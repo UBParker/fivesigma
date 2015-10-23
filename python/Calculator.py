@@ -55,17 +55,21 @@ class Calculator:
             print >>f, "Error        = err.$(Process)_$(Cluster)"
             print >>f, "Output       = out.$(Process)_$(Cluster)"
             print >>f, "Log          = condor_$(Cluster).log"
-            print >>f, "request_memory = 2.5 GB"
+            #print >>f, "request_memory = 2.5 GB"
             print >>f, "notification = Error"
             print >>f, ""
 
-            if limittype == "expected": limarguments = "--exp "
-            else:                       limarguments = "--obs "
+            nqueue=self.nqueue
+            if limittype == "expected":
+                limarguments = "--exp "
+            else:
+                limarguments = "--obs "
+                nqueue=1
 
             if self.method=="bayesian":
                 for hypo in self.hypothesis:
                      print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--bayesian --rmax "+str(hypo.rmax)
-                     print >>f, "queue " + str(self.nqueue)
+                     print >>f, "queue " + str(nqueue)
             if self.method=="asymptotic":
                 for hypo in self.hypothesis:
                      print >>f, "arguments =",hypo.cardfilename, hypo.name, "-o",os.path.join(self.outputdir, limittype), limarguments + "--asymptotic"

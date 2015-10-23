@@ -71,48 +71,48 @@ class Table:
     rows = property(getRows)
 
 class ExpectedLimit:
-   def __init__(self, filename, asymptotic=False):
-
-      self.median=-1
-      self.l68=-1
-      self.h68=-1
-      self.l95=-1
-      self.h95=-1
+    def __init__(self, filename, asymptotic=False):
 
 
-      f=ROOT.TFile(filename,"r")
-      tree = f.Get("limit")
-      alist=[]
-      if asymptotic:
-         for l in tree:
-            if math.fabs(l.quantileExpected -0.025)<0.001:
-                self.l95 = l.limit
-            if math.fabs(l.quantileExpected -0.16)<0.001:
-                self.l68 = l.limit
-            if math.fabs(l.quantileExpected -0.5)<0.001:
-                self.median = l.limit
-            if math.fabs(l.quantileExpected -0.84)<0.001:
-                self.h68 = l.limit
-            if math.fabs(l.quantileExpected -0.975)<0.001:
-                self.h95 = l.limit
-      else:
-         #print filename
-         x = array.array('d',[0])
-         try:
-            tree.SetBranchAddress( "limit", x )
-         except:
-            raise RuntimeError("this is wrong: %s"%(filename))
-         alist, i = [], 0
-         while tree.GetEntry(i):
-            i += 1
-            alist.append( x[0] )
-         alist=sorted(alist)
-         l=len(alist)
-         self.median=alist[int(0.5*l)]
-         self.l68=alist[int(0.158655254*l)]
-         self.h68=alist[int(0.841344746*l)]
-         self.l95=alist[int(0.022750132*l)]
-         self.h95=alist[int(0.977249868*l)]
+        self.median=-1
+        self.l68=-1
+        self.h68=-1
+        self.l95=-1
+        self.h95=-1
+
+        f=ROOT.TFile(filename,"r")
+        tree = f.Get("limit")
+        alist=[]
+        if asymptotic:
+            for l in tree:
+                if math.fabs(l.quantileExpected -0.025)<0.001:
+                    self.l95 = l.limit
+                if math.fabs(l.quantileExpected -0.16)<0.001:
+                    self.l68 = l.limit
+                if math.fabs(l.quantileExpected -0.5)<0.001:
+                    self.median = l.limit
+                if math.fabs(l.quantileExpected -0.84)<0.001:
+                    self.h68 = l.limit
+                if math.fabs(l.quantileExpected -0.975)<0.001:
+                    self.h95 = l.limit
+        else:
+            #print filename
+            x = array.array('d',[0])
+            try:
+                tree.SetBranchAddress( "limit", x )
+            except:
+                raise RuntimeError("this is wrong: %s"%(filename))
+            alist, i = [], 0
+            while tree.GetEntry(i):
+                i += 1
+                alist.append( x[0] )
+            alist=sorted(alist)
+            l=len(alist)
+            self.median=alist[int(0.5*l)]
+            self.l68=alist[int(0.158655254*l)]
+            self.h68=alist[int(0.841344746*l)]
+            self.l95=alist[int(0.022750132*l)]
+            self.h95=alist[int(0.977249868*l)]
 
 #def readTreesAsymptotic(directory, veto):
     #d_CLs = defaultdict(lambda : defaultdict(dict))
@@ -308,7 +308,8 @@ def read_output_file(filename):
     current_par, current_limit =  "", -1
     with open(filename, 'r') as f:
         for line in f:
-            if "Limit" in line and not "tries" in line:
+            #if "Limit" in line and not "tries" in line:
+            if "Limit" in line:
                 try:
                     current_limit = float(line.split(" ")[3])
                 except:
